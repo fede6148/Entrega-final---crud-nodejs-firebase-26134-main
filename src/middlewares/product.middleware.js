@@ -34,5 +34,17 @@ export const validateProduct = (req, res, next) => {
     });
   }
 
+  if (typeof stock !== 'number') {
+    return res.status(400).json({
+      error: 'El stock debe ser numérico'
+    });
+  }
+
+  if (stock < 0) {
+    return res.status(400).json({
+      error: 'Stock inválido, debe ser mayor o igual a 0'
+    });
+  }
+
   next();
 };
