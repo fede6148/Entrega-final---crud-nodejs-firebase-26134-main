@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "seed:products": "node ./src/seeders/products.seeder.js",
+    "seed:users": "node ./src/seeders/users.seeder.js"
   },
   "keywords": [],
   "author": "Federico Jose Melgarejo Hermosa",
