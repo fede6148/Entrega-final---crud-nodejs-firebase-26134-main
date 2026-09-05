@@ -1,14 +1,14 @@
 {
-  "name": "entrega-final",
+  "name": "Proyecto Zuripantis",
   "version": "1.0.0",
-  "description": "Proyecto CRUD con Node.js, Express y Firebase",
+  "description": "Proyecto CRUD con Node.js, Express y Better-SQLite3 (local)",
   "main": "index.js",
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "seed:products": "node ./src/seeders/products.seeder.js",
-    "seed:users": "node ./src/seeders/users.seeder.js"
+    "seed:products": "node src/seeders/products.seeder.js",
+    "seed:users": "node src/seeders/users.seeder.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "keywords": [],
   "author": "Federico Jose Melgarejo Hermosa",
@@ -16,11 +16,11 @@
   "type": "module",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
     "body-parser": "^2.2.2",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "firebase": "^12.15.0",
     "jsonwebtoken": "^9.0.3"
   },
   "devDependencies": {

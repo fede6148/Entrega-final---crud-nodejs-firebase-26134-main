@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zuripantis — Ventas</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+  <div class="page">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">ZURIPANTIS</span>
+        <span class="brand-tag">Panel de stock &amp; ventas</span>
+      </div>
+      <nav class="mainnav">
+        <a href="/" class="mainnav__link">Dashboard</a>
+        <a href="/productos.html" class="mainnav__link">Productos</a>
+        <a href="/ventas.html" class="mainnav__link is-active">Ventas</a>
+      </nav>
+    </header>
+
+    <main class="dashboard">
+
+      <section class="panel panel--tilt-left" style="margin-bottom: 28px;">
+        <div class="panel__halftone" aria-hidden="true"></div>
+        <h2 class="panel__title" style="color: var(--pink);">Registrar venta</h2>
+        <p class="panel__subtitle">Agregá uno o más productos y después registrá la venta completa</p>
+
+        <div id="form-feedback" class="feedback" hidden></div>
+
+        <div class="form__row" style="align-items: flex-end;">
+          <div class="field">
+            <label for="venta-producto">Producto</label>
+            <select id="venta-producto">
+              <option value="" disabled selected>Elegí un producto…</option>
+            </select>
+          </div>
+          <div class="field" style="max-width: 120px;">
+            <label for="venta-cantidad">Cantidad</label>
+            <input type="number" id="venta-cantidad" min="1" step="1" value="1" />
+          </div>
+          <div class="field" style="flex: 0;">
+            <button type="button" class="btn-secondary" id="agregar-btn">Agregar a la venta</button>
+          </div>
+        </div>
+
+        <p id="stock-hint" class="stock-hint"></p>
+
+        <div id="carrito-vacio" class="table-empty" style="padding: 16px 0;">
+          Todavía no agregaste ningún producto a esta venta.
+        </div>
+
+        <div id="carrito-wrap" class="table-wrap" hidden>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unit.</th>
+                <th>Subtotal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="carrito-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="subtotal-box" style="margin-top: 16px;">
+          <span class="subtotal-box__label">Total de la venta</span>
+          <span class="subtotal-box__value" id="carrito-total">$0</span>
+        </div>
+
+        <p class="stock-hint" style="margin-top: -6px;">
+          Agregá los productos que quieras uno por uno y, cuando termines, tocá "Registrar venta".
+        </p>
+
+        <div class="form__actions" style="margin-top: 16px;">
+          <button type="button" class="btn-primary" id="registrar-btn">Registrar venta</button>
+          <button type="button" class="btn-secondary" id="vaciar-btn">Vaciar carrito</button>
+        </div>
+      </section>
+
+      <section class="panel panel--tilt-right">
+        <div class="panel__halftone" aria-hidden="true"></div>
+        <h2 class="panel__title" style="color: var(--red);">Últimas ventas</h2>
+
+        <div id="tabla-loading" class="table-empty">Cargando ventas…</div>
+        <div id="tabla-error" class="table-empty" hidden>No se pudo conectar con el servidor.</div>
+        <p id="tabla-vacia" class="table-empty" hidden>Todavía no registraste ninguna venta.</p>
+
+        <div id="ventas-lista" class="ventas-lista"></div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <script src="/js/ventas.js"></script>
+</body>
+</html>

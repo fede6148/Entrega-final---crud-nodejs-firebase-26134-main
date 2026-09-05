@@ -1,79 +1,85 @@
 // src/models/users.model.js
-// Acceso directo a Firestore para la colección "users".
+// Acceso a la tabla "users" en SQLite.
 // Contiene funciones para CRUD de usuarios.
+//
+// Migrado desde Firestore: mismas funciones exportadas, mismos nombres
+// y firmas, para que services/controllers/routes no cambien.
 
-import {
-  collection,
-  getDocs,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-  query,
-  where
-} from 'firebase/firestore';
-
-import db from '../config/firebase.js';
-
-const usersCollection = collection(db, 'users');
+import db from '../config/database.js';
 
 // GET todos los usuarios
 export const getAllUsersModel = async () => {
-  const snapshot = await getDocs(usersCollection);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
+  const stmt = db.prepare('SELECT * FROM users');
+  return stmt.all();
 };
 
 // GET un usuario por ID
 export const getUserByIdModel = async (id) => {
-  const userRef = doc(usersCollection, id);
-  const snapshot = await getDoc(userRef);
+  const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
+  const user = stmt.get(id);
 
-  if (!snapshot.exists()) return null;
-
-  return { id: snapshot.id, ...snapshot.data() };
+  return user || null;
 };
 
-// GET un usuario por email (para chequear duplicados)
+// GET un usuario por email (para chequear duplicados y para el login)
 export const getUserByEmailModel = async (email) => {
-  const q = query(usersCollection, where('email', '==', email));
-  const snapshot = await getDocs(q);
+  const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+  const user = stmt.get(email);
 
-  if (snapshot.empty) return null;
-
-  const docSnap = snapshot.docs[0];
-  return { id: docSnap.id, ...docSnap.data() };
+  return user || null;
 };
 
 // POST crear usuario
 export const createUserModel = async (userData) => {
-  const userRef = await addDoc(usersCollection, userData);
-  return userRef.id;
+  const { name, email, password, role = 'user' } = userData;
+
+  const stmt = db.prepare(
+    'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)'
+  );
+  const result = stmt.run(name, email, password, role);
+
+  return result.lastInsertRowid;
 };
 
 // PUT actualizar usuario
 export const updateUserModel = async (id, userData) => {
-  const userRef = doc(usersCollection, id);
-  const snapshot = await getDoc(userRef);
+  const existing = await getUserByIdModel(id);
 
-  if (!snapshot.exists()) return null;
+  if (!existing) {
+    return null;
+  }
 
-  await updateDoc(userRef, userData);
+  const {
+    name = existing.name,
+    email = existing.email,
+    password = existing.password,
+    role = existing.role
+  } = userData;
 
-  return { id: userRef.id, ...userData };
+  const stmt = db.prepare(
+    'UPDATE users SET name = ?, email = ?, password = ?, role = ? WHERE id = ?'
+  );
+  stmt.run(name, email, password, role, id);
+
+  return {
+    id: Number(id),
+    name,
+    email,
+    password,
+    role
+  };
 };
 
 // DELETE eliminar usuario
 export const deleteUserModel = async (id) => {
-  const userRef = doc(usersCollection, id);
-  const snapshot = await getDoc(userRef);
+  const existing = await getUserByIdModel(id);
 
-  if (!snapshot.exists()) return null;
+  if (!existing) {
+    return null;
+  }
 
-  await deleteDoc(userRef);
+  const stmt = db.prepare('DELETE FROM users WHERE id = ?');
+  stmt.run(id);
 
-  return { id: snapshot.id, ...snapshot.data() };
+  return existing;
 };
