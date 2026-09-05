@@ -1,102 +1,91 @@
 // models/products.model.js
 // Lógica de acceso a datos para productos
-// Este modelo se comunica con la base de datos local (SQLite)
+// Este modelo se comunica con la base de datos (Firebase) 
 // para obtener los datos y realizar las operaciones necesarias.
 
-import db from '../config/database.js';
+// Importamos las funciones necesarias de Firebase
+import {
+  collection,
+  getDocs,
+  getDoc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc
+} from 'firebase/firestore';
+
+// Importamos la configuración de Firebase
+import db from '../config/firebase.js';
+
+const productsCollection = collection(db, 'products');
+
 
 // función GET para obtener todos los productos
 export const getAllProductsModel = async () => {
-  const stmt = db.prepare('SELECT * FROM products');
-  return stmt.all();
+  const snapshot = await getDocs(productsCollection);
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
 };
 
 // función GET para obtener un producto por ID
 export const getProductByIdModel = async (id) => {
-  const stmt = db.prepare('SELECT * FROM products WHERE id = ?');
-  const product = stmt.get(id);
+  const productRef = doc(productsCollection, id);
 
-  return product || null;
+  const snapshot = await getDoc(productRef);
+
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  return {
+    id: snapshot.id,
+    ...snapshot.data()
+  };
 };
 
 // función POST para crear un nuevo producto
 export const createProductModel = async (product) => {
-  const { name, description, price, stock, category, size, color } = product;
+  const productRef = await addDoc(productsCollection, product);
 
-  const stmt = db.prepare(
-    `INSERT INTO products (name, description, price, stock, category, size, color)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-  );
-  const result = stmt.run(
-    name,
-    description ?? null,
-    price,
-    stock,
-    category ?? null,
-    size ?? null,
-    color ?? null
-  );
-
-  return result.lastInsertRowid;
+  return productRef.id;
 };
 
 // función PUT para actualizar un producto existente
 export const updateProductModel = async (id, product) => {
-  const existing = await getProductByIdModel(id);
+  const productRef = doc(productsCollection, id);
 
-  if (!existing) {
+  const snapshot = await getDoc(productRef);
+
+  if (!snapshot.exists()) {
     return null;
   }
 
-  const {
-    name = existing.name,
-    description = existing.description,
-    price = existing.price,
-    stock = existing.stock,
-    category = existing.category,
-    size = existing.size,
-    color = existing.color
-  } = product;
-
-  const stmt = db.prepare(
-    `UPDATE products
-     SET name = ?, description = ?, price = ?, stock = ?, category = ?, size = ?, color = ?
-     WHERE id = ?`
-  );
-  stmt.run(name, description, price, stock, category, size, color, id);
+  await updateDoc(productRef, product);
 
   return {
-    id: Number(id),
-    name,
-    description,
-    price,
-    stock,
-    category,
-    size,
-    color
+    id: productRef.id,
+    ...product
   };
 };
 
-// función DELETE para eliminar un producto por ID.
-// Lanza 'PRODUCTO_CON_VENTAS' si el producto tiene ventas asociadas
-// (la tabla sales referencia a products, y no se permite borrar en
-// cascada para no perder el historial de ventas).
+// función DELETE para eliminar un producto por ID
 export const deleteProductModel = async (id) => {
-  const existing = await getProductByIdModel(id);
+  const productRef = doc(productsCollection, id);
+  const snapshot = await getDoc(productRef);
 
-  if (!existing) {
+  if (!snapshot.exists()) {
     return null;
   }
 
-  try {
-    const stmt = db.prepare('DELETE FROM products WHERE id = ?');
-    stmt.run(id);
-  } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY') {
-      throw new Error('PRODUCTO_CON_VENTAS');
-    }
-    throw error;
-  }
+  const deletedProduct = {
+    id: snapshot.id,
+    ...snapshot.data()
+  };
 
-  return existing;
+  await deleteDoc(productRef);
+
+  return deletedProduct;
 };
